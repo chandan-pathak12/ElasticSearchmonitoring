@@ -1,0 +1,208 @@
+Step #1:Install Java Development Kit (JDK)
+Update the system before starting the installation.
+
+sudo apt update 
+How to Monitor Elasticsearch with Prometheus and Grafana 1
+Elasticsearch requires Java to run. Install OpenJDK 8 by running the following command.
+
+sudo apt-get install openjdk-8-jdk
+How to Monitor Elasticsearch with Prometheus and Grafana 2
+Set the JAVA_HOME environment variable.
+
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
+export PATH=$PATH:/usr/lib/jvm/java-8-openjdk/bin
+How to Monitor Elasticsearch with Prometheus and Grafana 3
+Step #2:Install Elasticsearch on Ubuntu
+First update the system again.
+
+sudo apt update
+How to Monitor Elasticsearch with Prometheus and Grafana 4
+Download .deb file for elasticsearch.
+
+wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.1/elasticsearch-2.3.1.deb
+How to Monitor Elasticsearch with Prometheus and Grafana 5
+To install the .deb file use dpkg command.
+
+sudo dpkg -i elasticsearch-2.3.1.deb
+How to Monitor Elasticsearch with Prometheus and Grafana 6
+Now lets setup network configuration for that open the elasticsearch.yml file.
+
+sudo nano /etc/elasticsearch/elasticsearch.yml
+How to Monitor Elasticsearch with Prometheus and Grafana 7
+By default, Elasticsearch is configured to bind to localhost. If you want to access Elasticsearch from outside the server, you need to modify its configuration.
+
+Find the line that starts with #network.host, uncomment it, and change its value to 0.0.0.0
+
+network.host: 0.0.0.0
+How to Monitor Elasticsearch with Prometheus and Grafana 8
+enable the elasticsearch service.
+
+sudo systemctl enable elasticsearch.service
+How to Monitor Elasticsearch with Prometheus and Grafana 9
+start the elasticsearch service
+
+sudo systemctl start elasticsearch
+How to Monitor Elasticsearch with Prometheus and Grafana 10
+you can check it’s status to see if it’s running properly or not.
+
+sudo systemctl status elasticsearch
+How to Monitor Elasticsearch with Prometheus and Grafana 11
+You can verify that Elasticsearch is running by accessing it through a web browser.
+
+give your ubuntu instance PublicIP address:9200 port number which is default port number for elasticsearch.
+
+How to Monitor Elasticsearch with Prometheus and Grafana 12
+Step #3:Install Prometheus on Ubuntu
+Download the latest version of Prometheus from the GitHub repository using the following command.
+
+wget https://github.com/prometheus/prometheus/releases/download/v2.30.0/prometheus-2.30.0.linux-amd64.tar.gz
+How to Monitor Elasticsearch with Prometheus and Grafana 13
+extract the downloaded archives.
+
+tar xvfz prometheus-2.30.0.linux-amd64.tar.gz
+The command extracts the contents of the file prometheus-2.30.0.linux-amd64.tar.gz
+
+How to Monitor Elasticsearch with Prometheus and Grafana 14
+now navigate to the extracted directory using following command.
+
+cd prometheus-2.30.0.linux-amd64
+How to Monitor Elasticsearch with Prometheus and Grafana 15
+navigate to the /etc/systemd/system, this is where typically systemd unit files are located, which are used for managing services on Linux systems.
+
+cd /etc/systemd/system
+How to Monitor Elasticsearch with Prometheus and Grafana 16
+now lets create a service for Prometheus named prometheus.service.
+
+sudo vi prometheus.service
+How to Monitor Elasticsearch with Prometheus and Grafana 17
+add the following content into it.
+
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/home/ubuntu/prometheus-2.30.0.linux-amd64/prometheus --config.file=/home/ubuntu/prometheus-2.30.0.linux-amd64/prometheus.yml
+Restart=always
+
+[Install]
+WantedBy=default.target
+How to Monitor Elasticsearch with Prometheus and Grafana 18
+Now our prometheus.service is created.
+
+After this reload the daemon service, enable, and start the Prometheus service:
+
+sudo systemctl daemon-reload
+sudo systemctl enable prometheus.service
+sudo systemctl start prometheus.service
+How to Monitor Elasticsearch with Prometheus and Grafana 19
+How to Monitor Elasticsearch with Prometheus and Grafana 20
+How to Monitor Elasticsearch with Prometheus and Grafana 21
+now Verify the status of the Prometheus service using following command:
+
+sudo systemctl status prometheus.service
+How to Monitor Elasticsearch with Prometheus and Grafana 22
+If your service is running properly then you can run prometheus by running
+
+Public IP:9090 which is default port for prometheus in url.
+
+How to Monitor Redis with Prometheus and Grafana 13
+Step #4:Install Grafana on Ubuntu
+First import the GPG key used by the Grafana package.
+
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+How to Monitor Elasticsearch with Prometheus and Grafana 23
+then add the Grafana repository to the APT sources.
+
+sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+How to Monitor Elasticsearch with Prometheus and Grafana 24
+After adding the repository update the package lists
+
+sudo apt update
+How to Monitor Elasticsearch with Prometheus and Grafana 25
+then install the grafana.
+
+sudo apt install grafana
+How to Monitor Elasticsearch with Prometheus and Grafana 26
+Start and enable the Grafana service.
+
+sudo systemctl start grafana-server
+sudo systemctl enable grafana-server
+How to Monitor Elasticsearch with Prometheus and Grafana 27
+How to Monitor Elasticsearch with Prometheus and Grafana 28
+and if everything works fine and your service is running properly then run grafana by running your Public IP:3000 which is default port of grafana in searchbar.
+
+you will see the login page of grafana (UI) user interface
+
+Grafana has admin as default username and password.
+
+How to Monitor Redis with Prometheus and Grafana 19
+it will ask for changing the password you can change it or skip it.
+
+How to Monitor Redis with Prometheus and Grafana 20
+then you will see the welcome page of grafana.
+
+How to Monitor Redis with Prometheus and Grafana 21
+Step #5:Install Elasticsearch Exporter for Prometheus
+Create a system user for Elasticsearch.
+
+sudo useradd --no-create-home --shell /bin/false elastic_search
+How to Monitor Elasticsearch with Prometheus and Grafana 29
+then download the elasticsearch exporter on our ec2 instance.
+
+To download the different versions visit the official website of Elasticsearch exporter prometheus Github page.
+
+sudo wget https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v1.5.0/elasticsearch_exporter-1.5.0.linux-amd64.tar.gz
+How to Monitor Elasticsearch with Prometheus and Grafana 30
+extract the files.
+
+sudo tar -xvzf elasticsearch_exporter-1.5.0.linux-amd64.tar.gz
+How to Monitor Elasticsearch with Prometheus and Grafana 31
+Now lets move to the extracted directory.
+
+cd elasticsearch_exporter-1.5.0.linux-amd64/
+How to Monitor Elasticsearch with Prometheus and Grafana 32
+Copy the exporter binary to /usr/local/bin/
+
+sudo cp elasticsearch_exporter /usr/local/bin/
+How to Monitor Elasticsearch with Prometheus and Grafana 33
+Now change the exporter binary ownership
+
+sudo chown elastic_search:elastic_search /usr/local/bin/elasticsearch_exporter
+How to Monitor Elasticsearch with Prometheus and Grafana 34
+Create a elasticsearch_exporter.service file.
+
+sudo vim /etc/systemd/system/elasticsearch_exporter.service
+How to Monitor Elasticsearch with Prometheus and Grafana 35
+add the following content into it.
+
+[Unit]
+Description=Prometheus ES_exporter
+After=local-fs.target network-online.target network.target
+Wants=local-fs.target network-online.target network.target
+
+[Service]
+User=elastic_search
+Nice=10
+ExecStart=/usr/local/bin/elasticsearch_exporter --es.uri=http://elastic_search@localhost:9200 --es.all --es.indices --es.timeout 20s
+ExecStop=/usr/bin/killall elasticsearch_exporter
+
+[Install]
+WantedBy=default.target
+How to Monitor Elasticsearch with Prometheus and Grafana 36
+Now reload the service and after that enable and start it.
+
+sudo systemctl daemon-reload
+sudo systemctl enable elasticsearch_exporter
+sudo systemctl start elasticsearch_exporter
+How to Monitor Elasticsearch with Prometheus and Grafana 37
+Check the status of the service to if the service is running properly or not.
+
+sudo systemctl status elasticsearch_exporter.service
+How to Monitor Elasticsearch with Prometheus and Grafana 38
+
+
+
+
+Reference:--- https://www.fosstechnix.com/monitor-elasticsearch-with-prometheus-grafana/
